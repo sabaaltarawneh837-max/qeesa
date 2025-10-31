@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>غرفة دردشة صَبا 🔥</title>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #fff0f5;
+      direction: rtl;
+    }
+    #chat-box {
+      height: 300px;
+      overflow-y: scroll;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: #fff;
+      margin-bottom: 10px;
+      width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: right;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>غرفة دردشة صَبا 🔥</h2>
+  <div id="chat-box"></div>
+  <input type="text" id="message" placeholder="اكتبي رسالتك...">
+  <button onclick="sendMessage()">إرسال</button>
+
+  <script>
+    // 🔧 ضعي معلومات مشروعك من Firebase هنا
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // 🔥 تفعيل Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // 📤 إرسال رسالة
+    function sendMessage() {
+      const msg = document.getElementById("message").value;
+      if (msg.trim() !== "") {
+        db.collection("messages").add({
+          name: "صَبا",
+          text: msg,
+          timestamp: Date.now()
+        });
+        document.getElementById("message").value = "";
+      }
+    }
+
+    // 📥 عرض الرسائل تلقائيًا
+    db.collection("messages").orderBy("timestamp")
+      .onSnapshot(snapshot => {
+        const box = document.getElementById("chat-box");
+        box.innerHTML = "";
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          box.innerHTML += `<p><strong>${data.name}:</strong> ${data.text}</p>`;
+        });
+        box.scrollTop = box.scrollHeight;
+      });
+  </script>
+</body>
+</html>
