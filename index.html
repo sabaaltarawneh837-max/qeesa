@@ -12,7 +12,6 @@
       padding: 0;
       direction: rtl;
     }
-
     header {
       background-color: #4f46e5;
       color: white;
@@ -21,7 +20,6 @@
       font-size: 24px;
       font-weight: bold;
     }
-
     main {
       width: 90%;
       max-width: 700px;
@@ -31,7 +29,6 @@
       padding: 20px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     input, textarea, button {
       width: 100%;
       margin: 8px 0;
@@ -40,7 +37,6 @@
       border: 1px solid #ccc;
       font-family: inherit;
     }
-
     button {
       background-color: #4f46e5;
       color: white;
@@ -48,11 +44,7 @@
       cursor: pointer;
       transition: 0.3s;
     }
-
-    button:hover {
-      background-color: #4338ca;
-    }
-
+    button:hover { background-color: #4338ca; }
     .post {
       background: #f9fafb;
       border: 1px solid #e5e7eb;
@@ -60,16 +52,6 @@
       padding: 15px;
       margin-top: 15px;
     }
-
-    .post h3 {
-      margin: 0;
-      color: #1f2937;
-    }
-
-    .post small {
-      color: #6b7280;
-    }
-
     .reply {
       margin-top: 10px;
       padding: 8px;
@@ -79,56 +61,60 @@
   </style>
 </head>
 <body>
-
   <header>💬 منتدى المواهب</header>
-
   <main>
     <h2>أضف نقاشًا جديدًا</h2>
     <input id="author" placeholder="اكتب اسمك">
     <textarea id="content" rows="3" placeholder="عن ماذا تريد النقاش؟"></textarea>
     <button onclick="addPost()">نشر النقاش</button>
-
     <h2>🗨️ النقاشات الحالية</h2>
     <div id="posts"></div>
   </main>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+
   <script>
+    // 🔥 الصق هنا كود الإعداد من Firebase Console
+    const firebaseConfig = {
+      apiKey: "AIzaSyXXXX...",
+      authDomain: "talents-discussion.firebaseapp.com",
+      projectId: "talents-discussion",
+      storageBucket: "talents-discussion.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     const postsContainer = document.getElementById("posts");
 
-    function addPost() {
+    async function addPost() {
       const name = document.getElementById("author").value.trim();
       const text = document.getElementById("content").value.trim();
       if (!name || !text) return alert("الرجاء كتابة الاسم والمحتوى");
 
-      const post = document.createElement("div");
-      post.className = "post";
-      post.innerHTML = `
-        <h3>${name}</h3>
-        <p>${text}</p>
-        <small>🕓 الآن</small>
-        <div class="replies"></div>
-        <textarea placeholder="اكتب ردك هنا..."></textarea>
-        <button onclick="addReply(this)">أضف رد</button>
-      `;
+      await db.collection("posts").add({
+        author: name,
+        text: text,
+        time: new Date()
+      });
 
-      postsContainer.prepend(post);
       document.getElementById("author").value = "";
       document.getElementById("content").value = "";
     }
 
-    function addReply(button) {
-      const replyBox = button.previousElementSibling;
-      const replyText = replyBox.value.trim();
-      if (!replyText) return alert("الرجاء كتابة الرد");
-
-      const replyDiv = document.createElement("div");
-      replyDiv.className = "reply";
-      replyDiv.textContent = replyText;
-
-      button.parentElement.querySelector(".replies").appendChild(replyDiv);
-      replyBox.value = "";
-    }
+    db.collection("posts").orderBy("time", "desc").onSnapshot(snapshot => {
+      postsContainer.innerHTML = "";
+      snapshot.forEach(doc => {
+        const post = doc.data();
+        const div = document.createElement("div");
+        div.className = "post";
+        div.innerHTML = `<h3>${post.author}</h3><p>${post.text}</p><small>${new Date(post.time.toDate()).toLocaleString()}</small>`;
+        postsContainer.appendChild(div);
+      });
+    });
   </script>
-
 </body>
 </html>
